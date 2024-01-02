@@ -60,15 +60,15 @@ function html_start($script = '') {
 						<input type="submit" value="switch terug">
 					</form>
 				</li>
-			<?php } ?>
-		<?php } else if (check_staff()) { ?>
-			<li>
-				<form method="POST" action="do_su.php?session_guid=<?php echo $GLOBALS['session_guid']; ?>">
-					<input type="text" name="username" value="">
-					<input type="submit" value="switch user">
-				</form>
-			</li>
-		<?php }
+			<?php } else if (check_staff()) { ?>
+				<li>
+					<form method="POST" action="do_su.php?session_guid=<?php echo $GLOBALS['session_guid']; ?>">
+						<input type="text" name="username" value="">
+						<input type="submit" value="switch user">
+					</form>
+				</li>
+			<?php }
+		}
 		if (!preg_match("/rooster.php/", $_SERVER['PHP_SELF']) && !preg_match("/klassenlijst.php/", $_SERVER['PHP_SELF'])) { ?>
 			<li><a href="rooster.php?session_guid=<?php echo $GLOBALS['session_guid']; ?>">rooster</a></li>
 		<?php }
