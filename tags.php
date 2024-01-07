@@ -26,7 +26,7 @@ if (!isset($_GET['filter']) || $_GET['filter'] == '') $_GET['filter'] = array();
 else if (!is_array($_GET['filter'])) fatal("impossible");
 
 $filter = db_all_assoc_rekey(<<<EOQ
-SELECT tag_type, GROUP_CONCAT(CONCAT(tag_id, '-', tag_name) ORDER BY tag_order) FROM $voxdb.tag WHERE tag_type != ? GROUP BY tag_type
+SELECT tag_type, GROUP_CONCAT(CONCAT(tag_id, '-', tag_name) ORDER BY tag_order) FROM $voxdb.tag WHERE tag_type = ? GROUP BY tag_type
 EOQ
 , $type);
 
