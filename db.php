@@ -263,3 +263,44 @@ function db_dump_result($res, $show_table_names = 0) {
     mysqli_field_seek($res, 0);
     mysqli_data_seek($res, 0);
 }
+
+function db_dump_result_trans($res, $show_table_names = 0) {
+    // Begin met het weergeven van de tabel
+    echo("<table>\n<thead>\n<tr>");
+
+    // Sluit de tabelkop af
+    echo("</thead>\n<tbody>\n");
+
+    // Haal de veldnamen op
+    $fieldNames = mysqli_fetch_fields($res);
+
+    // Loop door alle kolommen in het resultaat
+    for ($i = 0; $i < mysqli_num_fields($res); $i++) {
+        // Begin een nieuwe rij
+        echo('<tr>');
+        // Loop door alle rijen en haal het gegeven op
+        mysqli_data_seek($res, 0);
+        echo('<td>' . $fieldNames[$i]->name . '</td>');
+        while ($row = mysqli_fetch_array($res, MYSQLI_NUM)) {
+            // Als het gegeven NULL is, toon het als cursief "NULL"
+            if ($row[$i] === NULL) {
+                echo('<td><i>NULL</i></td>');
+            } else {
+                // Anders, toon het gegeven in een cel
+                echo('<td>' . $row[$i] . '</td>');
+            }
+        }
+        // Sluit de rij af
+        echo("</tr>\n");
+    }
+
+    
+    // Sluit de tabelinhoud af
+    echo("</tbody>\n");
+    // Sluit de tabel af
+    echo("</table>\n");
+
+    // Reset het resultaat, zodat het opnieuw kan worden doorlopen
+    mysqli_field_seek($res, 0);
+    mysqli_data_seek($res, 0);
+}
