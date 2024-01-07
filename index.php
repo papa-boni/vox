@@ -101,7 +101,7 @@ function do_staff() {
 	</form>
 	
 	<form method="POST" accept-charset="UTF-8" action="do_avail.php?session_guid=<?=$session_guid?>">
-		<div class="tablemarkup"><?php db_dump_result($rooster); ?></div>
+		<div class="tablemarkup"><?php db_dump_result_trans($rooster); ?></div>
 		<input type="hidden" name="week_id" value="<?=$week_id?>">
 		<input type="hidden" name="ppl_id" value="<?=$GLOBALS['session_state']['ppl_id']?>">
 		<input type="submit" value="Opslaan">
@@ -257,7 +257,7 @@ function do_student() {
 		<p>Keuzes leerling <?= db_single_field("SELECT ppl_login FROM $voxdb.ppl WHERE ppl_id = {$GLOBALS['session_state']['ppl_id']}")?> in <?=$weken?>.
 	</form>
 	<form method="POST" accept-charset="UTF-8" action="do_claim.php?session_guid=<?=$session_guid?>">
-		<div class="tablemarkup"><?php  db_dump_result($rooster); ?></div>
+		<div class="tablemarkup"><?php  db_dump_result_trans($rooster); ?></div>
 		<input type="hidden" name="week_id" value="<?=$week_id?>">
 		<input type="hidden" name="ppl_id" value="<?=$GLOBALS['session_state']['ppl_id']?>">
 		<input type="submit" value="Opslaan">
