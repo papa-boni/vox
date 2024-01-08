@@ -45,19 +45,7 @@ EOS;
 //print_r($output);
 //echo($ret);
 
-html_start(<<<EOS
-$(function () {
-	$('.selectcolumn').click(function () {
-		var id = $(this).attr('id');
-		if ($(this).is(":checked")) {
-			$('.'+id).attr('checked', true);
-		} else {
-			$('.'+id).attr('checked', false);
-		}
-	});
-});
-EOS
-);
+html_start();
 $where = array();
 $qfilter = array();
 ?>
@@ -110,5 +98,21 @@ Soort tags:
 <input type="hidden" name="type" value="<?php echo htmlenc($type); ?>">
 <input type="submit" value="Opslaan">
 </form>
-<?php  html_end();
+<?php  
+$checkbox_java = <<<JAV
+<script>
+$(document).ready(function () {
+	$('.selectcolumn').click(function () {
+		var id = $(this).attr('id');
+		if ($(this).is(":checked")) {
+			$('.'+id).attr('checked', true);
+		} else {
+			$('.'+id).attr('checked', false);
+		}
+	});
+});
+</script>
+JAV;
+echo $checkbox_java;
+html_end();
 ?>
