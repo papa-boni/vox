@@ -44,7 +44,7 @@ JOIN $voxdb.claim USING (ppl_id)
 LEFT JOIN $voxdb.ppl2tag USING (ppl_id)
 LEFT JOIN $voxdb.tag USING (tag_id)
 JOIN $voxdb.avail USING (avail_id)
-WHERE time_id = ? AND avail.ppl_id = ? AND ( tag_type = 'NIVEAU' OR tag_type = 'LEERJAAR' OR tag_type IS NULL )
+WHERE time_id = ? AND avail.ppl_id = ?
 GROUP BY ppl_login
 ORDER BY ppl_surname, ppl_forename, ppl_prefix
 EOQ
