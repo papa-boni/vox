@@ -1,7 +1,6 @@
 <?php
 require('system.php');
 require('html.php');
-echo "hallo";
 //enforce_logged_in();
 enforce_permission('ACCOUNT');
 
