@@ -1,5 +1,5 @@
-
 <?php
+ob_start();
 // Hier zijn enkele belangrijke functies en concepten uitgelegd:
 
 // fatal($string): Deze functie wordt gebruikt voor het afhandelen van fatale fouten. Het stopt de uitvoering van het script en geeft een foutmelding weer. -->
@@ -20,6 +20,7 @@
 // check_permission($permission): Controleert of de gebruiker een specifieke permissie heeft.
 // enforce_permission($permission): Dwint een specifieke permissie af, anders wordt een fatale fout weergegeven.
 // upsert_password($username, $password, $old_log_id = 0): Werkt het wachtwoord van een gebruiker bij in de database. -->
+
 
 
 // the default config file is config.php, it can be overridden
@@ -94,32 +95,37 @@ if ($_SERVER['QUERY_STRING'] != '' && !preg_match('/^session_guid=[0-9a-f]{64}(&
 // Een sessie wordt gedefinieerd door de GUID van de client, het IP-adres en de UserAgent
 if (!isset($_GET['session_guid']) ||
     !($session_id = db_single_field(<<<EOQ
-SELECT session_id FROM sessions
-WHERE session_guid = ?
-AND session_useragent_id = ?
-AND session_address = ?
-AND session_config_id = ?
-EOQ
-, $_GET['session_guid'], $useragent_id, $_SERVER['REMOTE_ADDR'], $session_config_id))) {
+        SELECT session_id FROM sessions
+        WHERE session_guid = ?
+        AND session_useragent_id = ?
+        AND session_address = ?
+        AND session_config_id = ?
+    EOQ
+    , $_GET['session_guid'], $useragent_id, $_SERVER['REMOTE_ADDR'], $session_config_id))) {
     // Nieuwe sessie aanmaken als deze niet bestaat
     if (!isset($_GET['session_guid']) || (isset($_GET['session_guid']) && !preg_match('/^[0-9a-f]{64}$/', $_GET['session_guid']))) {
+        // Genereer een nieuwe sessie-GUID als deze niet is opgegeven of ongeldig is.
         $session_guid = generate_session_guid();
     } else {
         $session_guid = $_GET['session_guid'];
     }
 
+    // Voeg een nieuw sessierecord toe aan de database als INSERT niet lukt, genereer een fatale fout.
     if (db_exec(<<<EOQ
-INSERT INTO sessions
-SET session_guid = ?,
-    session_useragent_id = ?,
-    session_address = ?,
-    session_config_id = ?
-EOQ
-, $session_guid, $useragent_id, $_SERVER['REMOTE_ADDR'], $session_config_id) != 1)
+        INSERT INTO sessions
+        SET session_guid = ?,
+            session_useragent_id = ?,
+            session_address = ?,
+            session_config_id = ?
+    EOQ
+    , $session_guid, $useragent_id, $_SERVER['REMOTE_ADDR'], $session_config_id) != 1)
         fatal('unable to insert new session in DB');
+
+    // Haal het automatisch gegenereerde sessie-ID op.
     $session_id =  mysqli_insert_id($GLOBALS['db']);
 
     // Nieuwe sessie, maak een startrecord session_log
+    // de id van de session komt in de tabel session_log
     db_exec('INSERT INTO session_log SET session_id = ?', $session_id);
 } else {
     // Bestaande sessie ophalen
@@ -127,6 +133,7 @@ EOQ
         fatal('impossible: illegal session_guid in database?!?!?!');
     $session_guid = $_GET['session_guid'];
 }
+
 
 // Informatie over sessiestatus ophalen
 $GLOBALS['session_state'] = db_single_row(<<<EOQ
@@ -148,11 +155,11 @@ function htmlenc($string) {
 
 function write_state() {
 	db_exec(<<<EOQ
-INSERT INTO session_log
-SET session_prev_log_id = ?, session_id = ?, auth_user = ?, ppl_id = ?,
-	request_uri = ?, success_msg = ?, error_msg = ?
-EOQ
-	, 
+    INSERT INTO session_log
+    SET session_prev_log_id = ?, session_id = ?, auth_user = ?, ppl_id = ?,
+        request_uri = ?, success_msg = ?, error_msg = ?
+    EOQ
+        , 
 		$GLOBALS['session_state']['session_log_id'],
 		$GLOBALS['session_state']['session_id'],
 		$GLOBALS['session_state']['auth_user'],
@@ -181,30 +188,20 @@ function enforce_logged_in() {
     exit;
 }
 
-
-// Controleer of $voxdb is gedefinieerd
-if (isset($voxdb)) {
-    // Controleer of $voxdb niet leeg is
-    if (!empty($voxdb)) {
-        // Als er inhoud is, toon deze
-        echo "Inhoud van \$voxdb:\n";
-        print_r($voxdb);
-    } else {
-        // Als $voxdb leeg is, geef een mededeling weer
-        echo "\$voxdb is leeg.\n";
-    }
-} else {
-    // Als $voxdb niet is gedefinieerd, geef een foutmelding weer
-    echo "\$voxdb is niet gedefinieerd.\n";
-}
-
-
-// Controleren op beheerdersrechten
+// Deze functie controleert of de gebruiker geswitched (su) is.
 function check_su() {
+    // Maak de $voxdb-variabele globaal toegankelijk.
     global $voxdb;
+
+    // Controleer of de gebruiker is ingelogd. Als niet, retourneer false.
     if (!check_logged_in()) return false;
-    return $GLOBALS['session_state']['ppl_id'] != db_single_field("SELECT ppl_id FROM $voxdb.ppl WHERE ppl_login = ?", $GLOBALS['session_state']['auth_user']);
+
+    // Vergelijk de 'ppl_id' van de gebruiker met het resultaat van een databasequery.
+    // De query haalt 'ppl_id' op op basis van 'ppl_login' (gebruikersnaam).
+    // Als er geen overeenkomst is, betekent dit dat de gebruiker geswitched is.
+	return $GLOBALS['session_state']['ppl_id'] != db_single_field("SELECT ppl_id FROM $voxdb.ppl WHERE ppl_login = ?", $GLOBALS['session_state']['auth_user']);
 }
+
 
 // Controleren op personeelslid
 function check_staff() {
@@ -285,6 +282,12 @@ function upsert_password($username, $password, $old_log_id = 0) {
     }
     db_exec("INSERT INTO log ( prev_log_id, foreign_table, foreign_id, session_prev_log_id ) VALUES ( ?, 'log_passwords', ?, ? )", $log_id?$log_id:NULL, $log_password_id, $GLOBALS['session_state']['session_log_id']);
     db_direct('UNLOCK TABLES');
+}
+
+// paswoordgenerator
+function generatePassword() {
+    $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*_";
+    return substr(str_shuffle($chars), 0, 8);
 }
 
 ?>

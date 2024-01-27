@@ -28,8 +28,6 @@ GROUP BY time_id, avail.ppl_id
 EOQ
 , $_POST['week_id'], $_POST['ppl_id']);
 
-//print_r($ins);
-
 if (!isset($_POST['lock']) || !is_array($_POST['lock'])) $_POST['lock'] = array ();
 
 while ($row = mysqli_fetch_assoc($uren)) {

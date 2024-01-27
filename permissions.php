@@ -10,8 +10,14 @@ FROM permissions
 EOQ
 );
 
+
 html_start(); ?>
-<a href="permission.php?session_guid=<?=$session_guid?>">insert</a>
-<?php db_dump_result($res, true);
+<h4>Permissies</h4>
+<form action="permission.php" method="get">
+  <input type="hidden" name="session_guid" value="<?php echo $session_guid ?>">
+  <button class="btn" type="submit">Permissies toewijzen</button>
+</form>
+
+<?php db_dump_result_resp($res, true);
 html_end();
 ?>

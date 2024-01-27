@@ -1,8 +1,5 @@
 <?php
 require('system.php');
-//header('Content-type: text/plain');
-//print_r($GLOBALS['session_state']);
-//print_r($_POST);
 
 // true == accepted, false == rejected, null == error
 function ext_check_basic($username, $password) {
@@ -36,10 +33,9 @@ function ext_check_basic($username, $password) {
 	if ($status == 200) return true;
 	else if ($status == 401) return false;
 	return NULL;
-
-error:
-	warning_curl($ch);
-	return NULL;
+	error:
+		warning_curl($ch);
+		return NULL;
 }
 
 // true == accepted, false == rejected, null == error
@@ -68,23 +64,17 @@ function ext_check_form($username, $password) {
 
 	return NULL;
 
-error:
-	warning_curl($ch);
-	return NULL;
+	error:
+		warning_curl($ch);
+		return NULL;
 }
+
+$gebruikersnaam = '';
+$paswoordhash = '';
 
 function ext_check_local($username, $password) {
 	$password_hash = db_single_field("SELECT password_hash FROM passwords WHERE auth_user = ?", $_POST['username']);
-		/*
-		db_single_field(<<<EOQ
-SELECT password_hash FROM log_passwords
-JOIN log ON log.foreign_id = log_password_id AND log.foreign_table = 'log_passwords'
-LEFT JOIN log AS log_next ON log_next.prev_log_id = log.log_id
-WHERE log_next.log_id IS NULL
-AND log_passwords.auth_user = ?
-EOQ
-		, $_POST['username']);
-		 */
+
 	if (!$password_hash || !hash_equals($password_hash, crypt($_POST['password'], $password_hash))) return false;
 	return true;
 }
@@ -99,18 +89,23 @@ if ($GLOBALS['session_state']['auth_user']) {
 	goto exitlabel;
 }
 
+// Een switch-statement op basis van de waarde van $auth['method']
 switch ($auth['method']) {
-case 'Basic':
-	$res = ext_check_basic($_POST['username'], $_POST['password']);
-	break;
-case 'Form':
-	$res = ext_check_form($_POST['username'], $_POST['password']);
-	break;
-case 'Local':
-	$res = ext_check_local($_POST['username'], $_POST['password']);
-	break;
-default:
-	fatal('unknown auth method specified in config file: '.$auth['method']);
+    case 'Basic':
+        // Als de authenticatiemethode 'Basic' is, roep dan de functie ext_check_basic aan
+        $res = ext_check_basic($_POST['username'], $_POST['password']);
+        break;
+    case 'Form':
+        // Als de authenticatiemethode 'Form' is, roep dan de functie ext_check_form aan
+        $res = ext_check_form($_POST['username'], $_POST['password']);
+        break;
+    case 'Local':
+        // Als de authenticatiemethode 'Local' is, roep dan de functie ext_check_local aan
+		$res = ext_check_local($_POST['username'], $_POST['password']);
+        break;
+    default:
+        // Als de authenticatiemethode onbekend is, genereer dan een fatale fout met een foutbericht
+        fatal('unknown auth method specified in config file: '.$auth['method']);
 }
 
 if ($res === true) {
@@ -134,18 +129,19 @@ if ($res === true) {
 	if ($auth['method'] != 'Local' && !ext_check_local($_POST['username'], $_POST['password'])) 
 		upsert_password($_POST['username'], $_POST['password']);
 } else if ($res === false) {
-	$GLOBALS['session_state']['error_msg'] = 'Ongeldige combinatie van gebruikersnaam en wachtwoord.';
+	$GLOBALS['session_state']['error_msg'] = 'Ongeldige combinatie van gebruikersnaam en wachtwoord. Auth_user:' . $auth_user . " ppl_id" . $ppl_id;
 } else if ($res === null) {
 	$GLOBALS['session_state']['error_msg'] = 'Inloggen niet mogelijk door storing in authenticatieserver.';
 }
 
 exitlabel:
 
+// voegt session_guide aan request_uri toe als dat niet al gebeurd is 
 if (!preg_match('/\?session_guid=/', $GLOBALS['session_state']['request_uri']))
 	$GLOBALS['session_state']['request_uri'] .= '?session_guid='.$GLOBALS['session_guid'];
 
-echo($GLOBALS['session_state']['request_uri']);
-
 header('Location: '.$GLOBALS['session_state']['request_uri']);
+echo($GLOBALS['session_state']['request_uri']);
+print_r ($GLOBALS['session_state']);
 
 ?>

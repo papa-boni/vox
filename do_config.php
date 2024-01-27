@@ -4,7 +4,7 @@ enforce_permission('CONFIGS');
 
 header('Content-type: text/plain');
 
-print_r($_POST);
+// print_r($_POST);
 
 if (!checksetarray($_POST, array('config_key', 'config_value', 'submit')))
 	fatal('required fields are not set in $_POST');
@@ -55,6 +55,5 @@ default:
 }
 
 header('Location: configs.php?session_guid='.$session_guid);
-
 
 ?>

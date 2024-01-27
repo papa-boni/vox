@@ -74,5 +74,4 @@ default:
 
 header('Location: permissions.php?session_guid='.$session_guid);
 
-
 ?>

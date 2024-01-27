@@ -42,5 +42,4 @@ $really_redirect_to = preg_replace('/\?session_guid='.$_GET['session_guid'].'/',
 
 header('Location: '.$really_redirect_to);
 
-
 ?>

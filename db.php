@@ -1,5 +1,4 @@
 <?php
-
 // kijk of $mysqli_info de verwachte waardes heeft 'good practice
 if (!checksetarray($mysqli_info, array ('host', 'username', 'passwd', 'dbname')))
 	fatal('$mysql_info array not defined or complete '.
@@ -90,7 +89,6 @@ function db_query($query) {
 	array_shift($args);
 
 	return db_vquery($query, $args);
-
 }
 
 function db_direct($query) {
@@ -177,51 +175,81 @@ function db_exec($query) {
 	return db_vexec($query, $args);
 }
 
+// Deze functie haalt een ID op uit de database op basis van opgegeven criteria.
+// Deze functie lijkt een veilige manier te bieden om een nieuw ID op te halen of toe te voegen aan een database op basis van bepaalde criteria.
 function db_get_id($id_name, $table) {
-	$args = func_get_args();
-	array_shift($args);
-	array_shift($args);
+    // Haal alle argumenten op, behalve de eerste twee (id_name en table).
+    $args = func_get_args();
+    array_shift($args);
+    array_shift($args);
 
-	$argc = count($args);
+    // Controleer of het aantal argumenten na $table even is.
+    $argc = count($args);
+    if ($argc % 2) fatal('number of args to db_get_id after $table must be even');
 
-	if ($argc%2) fatal('number of args to db_get_id after $table must be even');
+    // Bouw de insert- en select-query's op.
+    $insert = $id_name.' = NULL';
+    $select = 'TRUE';
+    $values = array();
 
-	// build insert and select queries
-	$insert = $id_name.' = NULL';
-	$select = 'TRUE';
-	$values = array();
+    // Loop door de argumenten en bouw de queries en waarden op.
+    for ($i = 0; $i < $argc; $i += 2) {
+        $insert .= ', '.$args[$i].' = ?';
+        $select .= ' AND '.$args[$i].' = ?';
+        $values[] = &$args[$i+1];
+    }
 
-	for ($i = 0; $i < $argc; $i += 2) {
-		$insert .= ', '.$args[$i].' = ?';
-		$select .= ' AND '.$args[$i].' = ?';
-		$values[] = &$args[$i+1];
-	}
+    // Zet een schrijfvergrendeling op de tabel.
+    db_direct("LOCK TABLES $table WRITE");
 
-	db_direct("LOCK TABLES $table WRITE");
-	$id = db_vsingle_field('SELECT '.$id_name.' FROM '.$table.' WHERE '.$select, $values);
-	if (!$id) {
-		if (db_vexec('INSERT INTO '.$table.' SET '.$insert, $values) != 1) 
-			fatal('expected INSERT to affect precisely 1 row, but it did not');
-		$id = mysqli_insert_id($GLOBALS['db']);
-	}
-	db_direct('UNLOCK TABLES');
+    // Haal het ID op dat aan de voorwaarden voldoet.
+    $id = db_vsingle_field('SELECT '.$id_name.' FROM '.$table.' WHERE '.$select, $values);
 
-	return $id;
+    // Als er geen overeenkomend ID is gevonden, voeg een nieuw record toe aan de tabel.
+    if (!$id) {
+        // Voer een INSERT-query uit en controleer of precies 1 rij is beïnvloed.
+        if (db_vexec('INSERT INTO '.$table.' SET '.$insert, $values) != 1)
+            fatal('expected INSERT to affect precisely 1 row, but it did not');
+        
+        // Haal het automatisch gegenereerde ID op.
+        $id = mysqli_insert_id($GLOBALS['db']);
+    }
+
+    // Verwijder de schrijfvergrendeling van de tabel.
+    db_direct('UNLOCK TABLES');
+
+    // Geef het opgehaalde ID terug.
+    return $id;
 }
 
+
+// Deze functie lijkt ook een veilige manier te bieden om een useragent-ID op te halen of toe te voegen aan een database op basis van een useragent-string. Het maakt gebruik van een hash van de useragent-string om unieke identificatie mogelijk te maken en gebruikt transacties om atomiciteit te behouden tijdens het lezen en schrijven naar de database.
+// Deze functie haalt een useragent-ID op uit de database op basis van een useragent-string.
 function db_get_useragent_id($useragent_string) {
-	$hash = hash('sha256', $useragent_string);
+    // Genereer een hash van de useragent-string met het SHA-256 algoritme.
+    $hash = hash('sha256', $useragent_string);
 
-	db_direct('LOCK TABLES useragents WRITE');
-	$id = db_single_field('SELECT useragent_id FROM useragents WHERE useragent_hash = ?', $hash);
-	if (!$id) {
-		if (db_exec('INSERT INTO useragents ( useragent_string, useragent_hash ) VALUES ( ?, ? )', $useragent_string, $hash) != 1)
-			fatal('expected INSERT to affect precisely 1 row, but it did not');
-		$id = mysqli_insert_id($GLOBALS['db']);
-	}
-	db_direct('UNLOCK TABLES');
+    // Zet een schrijfvergrendeling op de useragents-tabel.
+    db_direct('LOCK TABLES useragents WRITE');
 
-	return $id;
+    // Haal het useragent-ID op dat overeenkomt met de hash.
+    $id = db_single_field('SELECT useragent_id FROM useragents WHERE useragent_hash = ?', $hash);
+
+    // Als er geen overeenkomend useragent-ID is gevonden, voeg een nieuw record toe aan de tabel.
+    if (!$id) {
+        // Voer een INSERT-query uit en controleer of precies 1 rij is beïnvloed.
+        if (db_exec('INSERT INTO useragents ( useragent_string, useragent_hash ) VALUES ( ?, ? )', $useragent_string, $hash) != 1)
+            fatal('expected INSERT to affect precisely 1 row, but it did not');
+        
+        // Haal het automatisch gegenereerde useragent-ID op.
+        $id = mysqli_insert_id($GLOBALS['db']);
+    }
+
+    // Verwijder de schrijfvergrendeling van de useragents-tabel.
+    db_direct('UNLOCK TABLES');
+
+    // Geef het opgehaalde useragent-ID terug.
+    return $id;
 }
 
 function db_dump_result($res, $show_table_names = 0) {
@@ -235,7 +263,7 @@ function db_dump_result($res, $show_table_names = 0) {
         // Voeg eventueel de tabelnaam toe aan de kop
         if ($show_table_names) echo($finfo->table.'<br>');
         // Voeg de naam van het veld toe aan de kop
-        echo($finfo->name.'</th>');
+        echo($finfo->name.'</th>');        
     }
     // Sluit de tabelkop af
     echo("</thead>\n<tbody>\n");
@@ -254,6 +282,86 @@ function db_dump_result($res, $show_table_names = 0) {
         // Sluit de rij af
         echo("</tr>\n");
     }
+    // Sluit de tabelinhoud af
+    echo("</tbody>\n");
+    // Sluit de tabel af
+    echo("</table>\n");
+
+    // Reset het resultaat, zodat het opnieuw kan worden doorlopen
+    mysqli_field_seek($res, 0);
+    mysqli_data_seek($res, 0);
+}
+function db_dump_result_resp($res, $show_table_names = 0) {
+    // Begin met het weergeven van de tabel
+    echo("<table class='highlight responsive-table'>\n<thead>\n<tr>");
+
+    // Loop door alle velden in het resultaat
+    while (($finfo = $res->fetch_field())) {
+        // Voeg een kop (header) toe voor elk veld
+        echo('<th>');
+        // Voeg eventueel de tabelnaam toe aan de kop
+        if ($show_table_names) echo($finfo->table.'<br>');
+        // Voeg de naam van het veld toe aan de kop
+        echo($finfo->name.'</th>');        
+    }
+    // Sluit de tabelkop af
+    echo("</thead>\n<tbody>\n");
+
+    // Loop door alle rijen in het resultaat
+    while (($row = mysqli_fetch_array($res, MYSQLI_NUM))) {
+        // Begin een nieuwe rij
+        echo('<tr>');
+        // Loop door alle gegevens in de rij
+        foreach ($row as $data) {
+            // Als het gegeven NULL is, toon het als cursief "NULL"
+            if ($data === NULL) echo('<td><i>NULL</i></td>');
+            // Anders, toon het gegeven in een cel
+            else echo('<td>'.$data.'</td>');
+        }
+        // Sluit de rij af
+        echo("</tr>\n");
+    }
+    // Sluit de tabelinhoud af
+    echo("</tbody>\n");
+    // Sluit de tabel af
+    echo("</table>\n");
+
+    // Reset het resultaat, zodat het opnieuw kan worden doorlopen
+    mysqli_field_seek($res, 0);
+    mysqli_data_seek($res, 0);
+}
+
+function db_dump_result_trans($res, $show_table_names = 0) {
+    // Begin met het weergeven van de tabel
+    echo("<table>\n<thead>\n<tr>");
+
+    // Sluit de tabelkop af
+    echo("</thead>\n<tbody>\n");
+
+    // Haal de veldnamen op
+    $fieldNames = mysqli_fetch_fields($res);
+
+    // Loop door alle kolommen in het resultaat
+    for ($i = 0; $i < mysqli_num_fields($res); $i++) {
+        // Begin een nieuwe rij
+        echo('<tr>');
+        // Loop door alle rijen en haal het gegeven op
+        mysqli_data_seek($res, 0);
+        echo('<td><b>' . $fieldNames[$i]->name . '</b></td>');
+        while ($row = mysqli_fetch_array($res, MYSQLI_NUM)) {
+            // Als het gegeven NULL is, toon het als cursief "NULL"
+            if ($row[$i] === NULL) {
+                echo('<td><i>NULL</i></td>');
+            } else {
+                // Anders, toon het gegeven in een cel
+                echo('<td>' . $row[$i] . '</td>');
+            }
+        }
+        // Sluit de rij af
+        echo("</tr>\n");
+    }
+
+    
     // Sluit de tabelinhoud af
     echo("</tbody>\n");
     // Sluit de tabel af

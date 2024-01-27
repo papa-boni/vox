@@ -48,13 +48,8 @@ foreach ($stuff3 as $time_id => $lok_id) {
 	if ($newlok) db_exec("INSERT INTO $voxdb.ppl2time2lok ( ppl_id, time_id, lok_id ) VALUES ( ?, ?, ? )", $_POST['ppl_id'], $time_id, $newlok);
 }
 
-// print_r($_POST);
-//print_r($stuff3);
-//exit;
-
 $GLOBALS['session_state']['success_msg'] = 'Beschikbaarheid opgeslagen';
 
 header('Location: index.php?session_guid='.$session_guid.'&week_id='.$_POST['week_id']);
-
 
 ?>

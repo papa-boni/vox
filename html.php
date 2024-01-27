@@ -8,6 +8,12 @@ function html_start($script = '') {
 	<html>
 	<head>
 	<meta charset="UTF-8">
+	<!-- voor ccs style in materialize gebruikt -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+	<!--Import Google Icon Font-->
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<link href='https://fonts.googleapis.com/css?family=Sofia' rel='stylesheet'>
+	<!-- eigen stylesheet -->
 	<link rel="stylesheet" href="css/style.css">
 	<!-- Toevoegen van verschillende icoontjes en resources -->
 	<link rel="apple-touch-icon" sizes="120x120" href="/vox/images/apple-touch-icon.png">
@@ -23,118 +29,221 @@ function html_start($script = '') {
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>VOX inschrijfsysteem</title>
 	</head>
-	<body>
-	<div class="flex-wrapper">
-	<div class="container">
-	<!-- Debuginformatie en menubalk -->
-	<ul class="debug">
-		<li id="session_log_id">session_log_id=<?php echo $GLOBALS['session_state']['session_log_id']; ?></li>
-		<li id="session_id">session_id=<?php echo $GLOBALS['session_id']; ?></li>
-		<li id="auth_user">auth_user=<?php echo ($GLOBALS['session_state']['auth_user']) ? $GLOBALS['session_state']['auth_user'] : '<i>NULL</i>'; ?></li>
-		<li id="ppl_id">ppl_id=<?php echo ($GLOBALS['session_state']['ppl_id']) ? $GLOBALS['session_state']['ppl_id'] : '<i>NULL</i>'; ?></li>
-		<?php
-		if (check_su()) {
-		?>
-			<li>switched user naar 
-				<?php
-				echo db_single_field("SELECT ppl_login FROM $voxdb.ppl WHERE ppl_id = ?", $GLOBALS['session_state']['ppl_id']); 
-				?>
-			</li>
-		<?php 
-		} 
-		?>
-	</ul>
-	<ul id="menu">
-		<?php if (check_logged_in()) { ?>
-			<li>
-				<form method="POST" action="do_logout.php?session_guid=<?php echo $GLOBALS['session_guid']; ?>">
-					ingelogd als <?php echo $GLOBALS['session_state']['auth_user']; ?> 
-					<input type="submit" value="logout">
-				</form>
-			</li>
-			<?php if (check_su()) { ?>
-				<li>
-					<form method="POST" action="do_su.php?session_guid=<?php echo $GLOBALS['session_guid']; ?>">
-						suid <?php echo db_single_field("SELECT ppl_login FROM $voxdb.ppl WHERE ppl_id = ?", $GLOBALS['session_state']['ppl_id']); ?>
-						<input type="hidden" name="username" value="<?php echo $GLOBALS['session_state']['auth_user']; ?>">
-						<input type="submit" value="switch terug">
-					</form>
-				</li>
-			<?php } else if (check_staff()) { ?>
-				<li>
-					<form method="POST" action="do_su.php?session_guid=<?php echo $GLOBALS['session_guid']; ?>">
-						<input type="text" name="username" value="">
-						<input type="submit" value="switch user">
-					</form>
-				</li>
-			<?php }
-		}
-		if (!preg_match("/rooster.php/", $_SERVER['PHP_SELF']) && !preg_match("/klassenlijst.php/", $_SERVER['PHP_SELF'])) { ?>
-			<li><a href="rooster.php?session_guid=<?php echo $GLOBALS['session_guid']; ?>">rooster</a></li>
-		<?php }
-		if (!preg_match("/edit_password.php/", $_SERVER['PHP_SELF'])) { ?>
-			<li><a href="edit_password.php?session_guid=<?php echo $GLOBALS['session_guid']; ?>">wijzig ww.</a></li>
-		<?php } ?>
-	</ul>
-	<?php if (!check_logged_in()) { ?>
-		<li>
-			<form method="POST" action="do_login.php?session_guid=<?php echo $GLOBALS['session_guid']; ?>">
-				<input type="text" placeholder="gebruikersnaam" name="username" autofocus>
-				<input type="password" placeholder="wachtwoord" name="password">
-				<input type="submit" value="login">
-			</form>
-		</li>
-	<?php } ?>
+	<body class="cyan lighten-4">
+	<header>
+		<nav class="cyan darken-1">
+			<div class="nav-wrapper">
+				<a href="#" class="sidenav-trigger" data-target="mobile-menu">
+					<i class="material-icons">menu</i>
+				</a>
+				<!-- menubalk -->
+				<ul class="left hide-on-med-and-down" id="menu">
+					<?php 
+						if (check_staff_rights()) { ?>
+							<li><a href="niet_ingeschreven.php?session_guid=<?php echo $GLOBALS['session_guid']?>">ni</a></li><?php 
+						} 
+						if (check_permission('TAGBEHEER') ) { ?>
+							<li><a href="tags.php?session_guid=<?php echo $GLOBALS['session_guid']?>">tg</a></li><?php 
+						}
+						if (check_permission('WEEKBEHEER')) { ?>
+							<li><a href="weken.php?session_guid=<?php echo $GLOBALS['session_guid']?>">we</a></li><?php 
+						}
+						if (check_permission('ACCOUNT') ) { ?>
+							<li><a href="account.php?session_guid=<?php echo $GLOBALS['session_guid']?>">ac</a></li><?php 
+						} 
+						if (check_permission('PERMISSIONS') ) { ?>
+							<li><a href="permissions.php?session_guid=<?php echo $GLOBALS['session_guid']?>">pb</a></li><?php 
+						}
+						if (check_permission('CONFIGS') ) { ?>
+							<li><a href="configs.php?session_guid=<?php echo $GLOBALS['session_guid']?>">cb</a></li><?php 
+						}
+ ?>
+				</ul>
+				<ul class="right hide-on-med-and-down" id="menu">
 
-	<!--<li><form method="POST" action="do_new_tab.php?session_guid=<?php echo($GLOBALS['session_guid']); ?>&amp;session_log_id=<?php echo($GLOBALS['session_state']['session_log_id']); ?>" target="_blank"><input type="submit" value="new tab"></form></li>-->
-	<?php if (check_staff_rights() && !preg_match("/niet_ingeschreven.php/", $_SERVER['PHP_SELF'])) { ?>
-		<li><a href="niet_ingeschreven.php?session_guid=<?php echo $GLOBALS['session_guid']?>">niet ingeschreven</a></li>
-	<?php } ?>
-	<?php if (!preg_match("/index.php/", $_SERVER['PHP_SELF'])) { ?>
-		<li><a href="index.php?session_guid=<?php echo $GLOBALS['session_guid']?>">home</a></li>
-	<?php } ?>
-	<?php if (check_permission('ACCOUNT') && !preg_match("/account.php/", $_SERVER['PHP_SELF'])) { ?>
-		<li><a href="account.php?session_guid=<?php echo $GLOBALS['session_guid']?>">accounts</a></li>
-	<?php } ?>
-	<?php if (check_permission('PERMISSIONS') && !preg_match("/permissions?.php/", $_SERVER['PHP_SELF'])) { ?>
-		<li><a href="permissions.php?session_guid=<?php echo $GLOBALS['session_guid']?>">pb</a></li>
-	<?php } ?>
-	<?php if (check_permission('CONFIGS') && !preg_match("/(configs.php|edit_config.php)/", $_SERVER['PHP_SELF'])) { ?>
-		<li><a href="configs.php?session_guid=<?php echo $GLOBALS['session_guid']?>">cb</a></li>
-	<?php } ?>
-	<?php if (check_permission('TAGBEHEER') && !preg_match("/tags.php/", $_SERVER['PHP_SELF'])) { ?>
-		<li><a href="tags.php?session_guid=<?php echo $GLOBALS['session_guid']?>">tags</a></li>
-	<?php } ?>
-	<?php if (check_permission('WEEKBEHEER') && !preg_match("/weken.php/", $_SERVER['PHP_SELF']) && !preg_match("/week_ops.php/", $_SERVER['PHP_SELF'])) { ?>
-		<li><a href="weken.php?session_guid=<?php echo $GLOBALS['session_guid']?>">weken</a></li>
-	<?php } ?>
-	</ul>
-	<?php if ($GLOBALS['session_state']['success_msg']) { ?>
-	<div id="successmsg"><span class="textual">success:</span>
-	<?php echo(($GLOBALS['session_state']['success_msg'])?$GLOBALS['session_state']['success_msg']:'<i>NULL</i>'); ?></div>
-	<?php $GLOBALS['session_state']['success_msg'] = NULL;
-	} ?>
-	<?php if ($GLOBALS['session_state']['error_msg']) { ?>
-	<div id="errormsg"><span class="textual">error:</span>
-	<?php echo(($GLOBALS['session_state']['error_msg'])?$GLOBALS['session_state']['error_msg']:'<i>NULL</i>'); ?></div>
-	<?php  $GLOBALS['session_state']['error_msg'] = NULL;
-	} ?>
-	<div style="clear: both"></div>
-	</div>
-	</div>
-	<!-- Voegt de footer toe met informatie en links -->	
-	<div id="footer">
-	<div id="footerlogo">
-	<img src="images/AGPLv3_Logo.svg">
-	</div>
-	<div id="footertext">
-	VOX Inschrijfsysteem &copy; 2018-2019 Rik Snel &lt;rik@snel.it&gt;.<br>
-	Released as <a href="http://www.gnu.org/philosophy/free-sw.html">free software</a> without warranties under <a href="http://www.fsf.org/licensing/licenses/agpl-3.0.html">GNU AGPL v3</a>.<br>
-	Sourcecode: git clone <a href="https://github.com/rsnel/vox/">https://github.com/rsnel/vox/</a>
-	</div>
-	</div>
+					<?php
+					if (check_logged_in()) { 
+						if (!preg_match("/index.php/", $_SERVER['PHP_SELF']) && !preg_match("/klassenlijst.php/", $_SERVER['PHP_SELF'])) { ?>
+							<li>
+								<a href="index.php?session_guid=<?php echo $GLOBALS['session_guid']; ?>">HOME</a>
+							</li>
+							<?php 
+						}
+						if (!preg_match("/rooster.php/", $_SERVER['PHP_SELF']) && !preg_match("/klassenlijst.php/", $_SERVER['PHP_SELF'])) { ?>
+							<li>
+								<a href="rooster.php?session_guid=<?php echo $GLOBALS['session_guid']; ?>">ROOSTER</a>
+							</li>
+							<?php 
+						}
+						if (!preg_match("/edit_password.php/", $_SERVER['PHP_SELF'])) { ?>
+							<li><a href="edit_password.php?session_guid=<?php echo $GLOBALS['session_guid']; ?>">WACHTWOORD</a></li>
+							<?php 
+						} 
+						?>
+						<li>
+							<a href="#" onclick="logout('<?php echo $GLOBALS["session_guid"]; ?>')">LOGOUT</a>
+						</li>
+						<li class='black-text'>Ingelogd als:</li><li>  
+							<?php echo $GLOBALS['session_state']['auth_user'];?>
+						</li><?php
+						if (check_su()) { ?>
+							<li class="black-text">Overgeschakeld naar </li>
+							<li>
+								<form method="POST" action="do_su.php?session_guid=<?php echo $GLOBALS['session_guid']; ?>">
+									<?php echo db_single_field("SELECT ppl_login FROM $voxdb.ppl WHERE ppl_id = ?", $GLOBALS['session_state']['ppl_id']); ?>
+									<input type="hidden" name="username" value="<?php echo $GLOBALS['session_state']['auth_user']; ?>">
+									<input class="btn-small" type="submit" value="switch terug">
+								</form>
+							</li>
+							<?php 
+						} else if (check_staff()) { ?>
+						<li class='col m1'></li>
+							<li class='black-text'> Overschakelen naar: 
+							</li>
+							<li>
+								<form method="POST" action="do_su.php?session_guid=<?php echo $GLOBALS['session_guid'] ?>">
+									<div class="row">
+										<div class="col 1">
+											<input type="text" name="username" value="" class="white-text input-field">
+										</div>
+									</div>
+									</li>
+
+								</form>
+							</li>							
+						<?php 
+						} 
+					} ?>
+				</ul>
+			</div>
+		</nav>
+		<ul class="sidenav cyan darken-3" id="mobile-menu">
+			<?php 
+			if (check_logged_in()) { 
+				if (!preg_match("/index.php/", $_SERVER['PHP_SELF']) && !preg_match("/klassenlijst.php/", $_SERVER['PHP_SELF'])) { ?>
+					<li>
+						<a class="white-text" href="index.php?session_guid=<?php echo $GLOBALS['session_guid']; ?>">HOME</a>
+					</li>
+					<?php 
+				}
+				if (!preg_match("/rooster.php/", $_SERVER['PHP_SELF']) && !preg_match("/klassenlijst.php/", $_SERVER['PHP_SELF'])) { ?>
+					<li><a class="white-text" href="rooster.php?session_guid=<?php echo $GLOBALS['session_guid']; ?>">ROOSTER</a></li>
+					<?php 
+				}
+				if (!preg_match("/edit_password.php/", $_SERVER['PHP_SELF'])) { ?>
+					<li><a class="white-text" href="edit_password.php?session_guid=<?php echo $GLOBALS['session_guid']; ?>">WACHTWOORD</a></li>
+					<?php 
+				} ?>
+				<li>
+					<a class="white-text" href="#" onclick="logout('<?php echo $GLOBALS["session_guid"]; ?>')">LOGOUT</a>
+				</li>
+				<li>
+					Ingelogd als:<br><div class="white-text"><?php echo $GLOBALS['session_state']['auth_user']; ?> </div>
+				</li>
+				<?php 
+				if (check_su()) { ?>
+					<li>
+						<form method="POST" action="do_su.php?session_guid=<?php echo $GLOBALS['session_guid']; ?>">
+							Overgeschakeld naar: <br><div class="white-text"><?php echo db_single_field("SELECT ppl_login FROM $voxdb.ppl WHERE ppl_id = ?", $GLOBALS['session_state']['ppl_id']); ?></div>
+							<input type="hidden" name="username" value="<?php echo $GLOBALS['session_state']['auth_user']; ?>"><br>
+							<input class="waves-effect waves-light btn-small" type="submit" value="switch terug">
+						</form>
+					</li>
+					<?php 
+				} else if (check_staff()) { ?>
+					<li>
+						<form method="POST" action="do_su.php?session_guid=<?php echo $GLOBALS['session_guid']; ?>">
+						Overschakelen naar: <br><input class="white-text" type="text" name="username" value="">
+							<!-- <input class="btn" type="submit" value="switch user"> -->
+						</form>
+					</li>
+					<?php 
+				}
+					
+				if (check_staff_rights()) { ?>
+					<li><a class="white-text" href="niet_ingeschreven.php?session_guid=<?php echo $GLOBALS['session_guid']?>">ni</a></li><?php 
+				} 
+				if (check_permission('TAGBEHEER') ) { ?>
+					<li><a class="white-text" href="tags.php?session_guid=<?php echo $GLOBALS['session_guid']?>">tg</a></li><?php 
+				}
+				if (check_permission('WEEKBEHEER')) { ?>
+					<li><a class="white-text" href="weken.php?session_guid=<?php echo $GLOBALS['session_guid']?>">we</a></li><?php 
+				}
+				if (check_permission('ACCOUNT') ) { ?>
+					<li><a class="white-text" href="account.php?session_guid=<?php echo $GLOBALS['session_guid']?>">ac</a></li><?php 
+				} 
+				if (check_permission('PERMISSIONS') ) { ?>
+					<li><a class="white-text" href="permissions.php?session_guid=<?php echo $GLOBALS['session_guid']?>">pb</a></li><?php 
+				}
+				if (check_permission('CONFIGS') ) { ?>
+					<li><a class="white-text" href="configs.php?session_guid=<?php echo $GLOBALS['session_guid']?>">cb</a></li><?php 
+				}
+
+			} ?>
+    	</ul>
+	</header>  
+	<main>
+		<div class="container cyan lighten-5">
+			<?php 
+			if (!check_logged_in()) { ?>
+				<h4>Vox keuzeuur inschrijfsysteem</h4>
+				<p>Log in om je in te schrijven voor keuzeuren.</p>
+				<form class="col s12" method="POST" action="do_login.php?session_guid=<?php echo $GLOBALS['session_guid']; ?>">
+					<div class="row">
+        				<div class="input-field col s6">
+							<input type="text" name="username">
+							<label for="username">Gebruikersnaam</label>
+						</div>
+						<div class="input-field col s6">
+							<input type="password" name="password">
+							<input class="btn-small" type="submit" value="login">
+							<label for="password">Paswoord</label>
+        				</div>
+					</div>
+				</form>
+				<?php 
+			} 
+			
+			if ($GLOBALS['session_state']['success_msg']) { ?>
+				<div id="successmsg"><span class="textual">success:</span>
+				<?php echo(($GLOBALS['session_state']['success_msg'])?$GLOBALS['session_state']['success_msg']:'<i>NULL</i>'); ?></div>
+				<?php $GLOBALS['session_state']['success_msg'] = NULL;
+			} ?>
+			<?php 
+			if ($GLOBALS['session_state']['error_msg']) { ?>
+				<div id="errormsg"><span class="textual">error:</span>
+				<?php echo(($GLOBALS['session_state']['error_msg'])?$GLOBALS['session_state']['error_msg']:'<i>NULL</i>'); ?></div>
+				<?php  $GLOBALS['session_state']['error_msg'] = NULL;
+			} ?>
+			<?php
+}
+
+function  html_end(){
+	?>
+	</main>
+	<!-- Voegt de footer toe met informatie en links -->
+	<footer class="cyan page-footer">
+    	<!-- <div class="footer-copyright"> -->
+		<!-- <div id="footer">-->
+		<div id="footerlogo">
+			<img src="images/AGPLv3_Logo.svg">
+		</div>
+		<div id="footertext">
+			VOX Inschrijfsysteem &copy; 2018-2019 Rik Snel &lt;rik@snel.it&gt;.<br>
+			Released as <a href="http://www.gnu.org/philosophy/free-sw.html">free software</a> without warranties under <a href="http://www.fsf.org/licensing/licenses/agpl-3.0.html">GNU AGPL v3</a>.<br>
+			Sourcecode: git clone <a href="https://github.com/rsnel/vox/">https://github.com/rsnel/vox/</a>
+		</div>
+	</footer>
+	<!-- Materialize JavaScript -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+	<!-- eigen scripts  -->
+	<script src="js/script.js" defer></script>
+
 	</body>
 	</html>
-<?php  
+	<?php  
 }
+
 ?>

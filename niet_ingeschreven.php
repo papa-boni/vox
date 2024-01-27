@@ -17,7 +17,7 @@ Geen lesweken zichtbaar in rooster op dit moment.
 <?php 		 exit;
 }	
 
-$default_week = db_single_field("SELECT CONCAT(time_year, 'wk', LPAD(time_week, 2, '0')) FROM voxdb.weken WHERE week_id = $week_id");
+$default_week = db_single_field("SELECT CONCAT(time_year, 'wk', LPAD(time_week, 2, '0')) FROM $voxdb.weken WHERE week_id = $week_id");
 
 $weken = generate_weken_select($week_id, 'rooster_zichtbaar');
 
@@ -60,11 +60,10 @@ $dagen = explode(',', $dagen);
 $uren = explode(',', $uren);
 
 html_start();
-
 ?>
 <form method="GET" accept-charset="UTF-8">
-<input type="hidden" name="session_guid" value="<?=$GLOBALS['session_guid']?>">
-<p>Niet ingeschreven leerlingen in <?=$weken?>.
+<input type="hidden" name="session_guid" value="<?php echo $GLOBALS['session_guid']?>">
+<H4>Niet ingeschreven leerlingen in</h4> <?php echo $weken?>
 </form>
 
 <?php $row = mysqli_fetch_assoc($rooster); ?>
@@ -72,13 +71,13 @@ html_start();
 <table>
 <tr>
 <th></th>
-<?php foreach ($dagen as $dag) { ?><th><?=$dagnamen[$dag]?></th>
+<?php foreach ($dagen as $dag) { ?><th><?php echo $dagnamen[$dag]?></th>
 <?php } ?>
 <?php foreach ($uren as $uur) { ?><tr>
-<td style="vertical-align: top;"><?=$uur?></td>
+<td style="vertical-align: top;"><?php echo $uur?></td>
 <?php foreach ($dagen as $dag) { ?><td style="vertical-align: top;">
 <?php while ($row && $row['uur'] == $uur && $row['dag'] == $dag) { ?>
-<?=$row['doc/vak']?><br>
+<?php echo $row['doc/vak']?><br>
 <?php $row = mysqli_fetch_assoc($rooster);
 } ?>
 </td>
@@ -88,7 +87,7 @@ html_start();
 </tr>
 </table>
 </div>
-<?
+<?php
 
 html_end();
 

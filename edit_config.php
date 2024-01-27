@@ -13,13 +13,14 @@ if (isset($_GET['log_id'])) {
 }
 
 html_start(); ?>
+<h4>Super personeel aanpassen</h4>
 <form action="do_config.php?session_guid=<?php echo($session_guid); ?>" method="POST" accept-charset="UTF-8">
-<input type="text" name="config_key" value="<?=$res['config_key']?>">
-<input type="text" name="config_value" value="<?=$res['config_value']?>">
-<input type="submit" name="submit" value="opslaan">
+<input type="text" name="config_key" value="<?php echo $res['config_key']?>">
+<input type="text" name="config_value" value="<?php echo $res['config_value']?>">
+<input type="submit" class="btn" name="submit" value="opslaan">
 <?php if (isset($_GET['log_id'])) { ?>
-<input type="hidden" name="log_id" value="<?=$_GET['log_id']?>">
-<input type="submit" name="submit" value="verwijder">
+<input type="hidden" name="log_id" value="<?php echo $_GET['log_id']?>">
+<input type="submit" class="btn" name="submit" value="verwijder">
 <?php } ?>
 </form>
 <?php html_end();

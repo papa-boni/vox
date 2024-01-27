@@ -19,6 +19,6 @@ html_start(); ?>
 <pre>
 <?php print_r($res); ?>
 </pre>
-<?
+<?php
 html_end();
 ?>

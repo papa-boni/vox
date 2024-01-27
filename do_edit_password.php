@@ -11,6 +11,8 @@ if (!checksetarray($_POST, array('old_password', 'new_password', 'new_password2'
 
 $username = db_single_field("SELECT ppl_login FROM $voxdb.ppl WHERE ppl_id = ?", $GLOBALS['session_state']['ppl_id']);
 
+
+// if (check_su()) {//dit is aangepast om wachtwoord te kunnen invoeren zonder oud wachtwoord
 if (!check_su()) {
 	$password_hash = db_single_field(<<<EOQ
 SELECT password_hash FROM passwords WHERE auth_user = ?
@@ -102,6 +104,5 @@ default:
 }
 
 header('Location: permissions.php?session_guid='.$session_guid);
- 
 
 ?>

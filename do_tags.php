@@ -20,14 +20,14 @@ else if (!is_array($_POST['betreft'])) fatal("impossible");
 if (!isset($_POST['filter'])) $_POST['filter'] = array();
 else if (!is_array($_POST['filter'])) fatal("impossible");
 
-//print_r($_POST);
+// print_r($_POST);
 //print_r($res);
 
 $qstring = '';
 foreach ($_POST['filter'] as $tag_id) {
 	$qstring .= '&filter[]='.$tag_id;
 }
-//echo($qstring);
+// echo($qstring);
 //exit;
 foreach ($res as $ppltag => $coupled) {
 	if (!in_array(explode('-', $ppltag)[0], $_POST['betreft'])) continue;

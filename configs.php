@@ -11,7 +11,11 @@ EOQ
 );
 
 html_start(); ?>
-<a href="edit_config.php?session_guid=<?=$session_guid?>">insert</a>
-<?php db_dump_result($res, true);
+<h4>Super personeel</h4>
+<form action="edit_config.php" method="get">
+  <input type="hidden" name="session_guid" value="<?php echo $session_guid ?>">
+  <button class="btn" type="submit">Super personeel toewijzen</button>
+</form>
+<?php db_dump_result_resp($res, true);
 html_end();
 ?>

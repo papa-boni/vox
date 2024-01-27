@@ -17,5 +17,4 @@ upsert_password($username, $_POST['password']);
 
 header('Location: account.php?session_guid='.$session_guid);
 
-
 ?>

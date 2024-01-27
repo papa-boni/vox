@@ -14,12 +14,12 @@ if (isset($_GET['week_id'])) {
 
 if (!$week_id) {
 	html_start(); ?>
-Geen lesweken zichtbaar in rooster op dit moment.
-<?	html_end();
+<h6>Geen lesweken zichtbaar in rooster op dit moment.</h6>
+<?php	html_end();
 	exit;
 }	
 
-$default_week = db_single_field("SELECT CONCAT(time_year, 'wk', LPAD(time_week, 2, '0')) FROM voxdb.weken WHERE week_id = $week_id");
+$default_week = db_single_field("SELECT CONCAT(time_year, 'wk', LPAD(time_week, 2, '0')) FROM $voxdb.weken WHERE week_id = $week_id");
 
 $onsubmit = "this.form.submit()";
 $error = '';
@@ -91,26 +91,29 @@ $dagen = explode(',', $dagen);
 $uren = explode(',', $uren);
 
 html_start();
-
 ?>
 <form method="GET" accept-charset="UTF-8">
-<input type="hidden" name="session_guid" value="<?=$GLOBALS['session_guid']?>">
-<p>Rooster in <?=$weken?> van <?=$target?>.
-<input type="submit" value="Zoek"><input id="zoekbox" type="text" name="q" placeholder="llnr of docent" autofocus><?=$error?>
+<input type="hidden" name="session_guid" value="<?php echo $GLOBALS['session_guid']?>">
+<h4>Rooster van <?php echo $target?> in </h4><?php echo $weken?>Of toon het rooster van:
+<div class="row">
+	<input id="zoekbox" type="text" name="q" placeholder="llnr of docent" autofocus><?php echo $error?>
+	<input class="btn" type="submit" value="Selecteer">
+</div>
 </form>
 
 <?php $row = mysqli_fetch_assoc($rooster); ?>
+<div class=container>
 <div class="tablemarkup">
 <table>
 <tr>
 <th></th>
-<?php foreach ($dagen as $dag) { ?><th><?=$dagnamen[$dag]?></th>
+<?php foreach ($dagen as $dag) { ?><th><?php echo $dagnamen[$dag]?></th>
 <?php } ?>
 <?php foreach ($uren as $uur) { ?><tr>
-<td style="vertical-align: top;"><?=$uur?></td>
+<td style="vertical-align: top;"><?php echo $uur?></td>
 <?php foreach ($dagen as $dag) { ?><td style="vertical-align: top;">
 <?php while ($row && $row['uur'] == $uur && $row['dag'] == $dag) { ?>
-<?=$row['doc/vak']?><br>
+<?php echo $row['doc/vak']?><br>
 <?php $row = mysqli_fetch_assoc($rooster);
 } ?>
 </td>
@@ -120,7 +123,8 @@ html_start();
 </tr>
 </table>
 </div>
-<?
+</div>
+<?php
 
 html_end();
 
