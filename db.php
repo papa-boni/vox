@@ -298,7 +298,7 @@ function db_dump_result_resp($res, $show_table_names = 0) {
     // Loop door alle velden in het resultaat
     while (($finfo = $res->fetch_field())) {
         // Voeg een kop (header) toe voor elk veld
-        echo('<th>');
+        echo('<th class="small-checkbox">');
         // Voeg eventueel de tabelnaam toe aan de kop
         if ($show_table_names) echo($finfo->table.'<br>');
         // Voeg de naam van het veld toe aan de kop
@@ -314,9 +314,9 @@ function db_dump_result_resp($res, $show_table_names = 0) {
         // Loop door alle gegevens in de rij
         foreach ($row as $data) {
             // Als het gegeven NULL is, toon het als cursief "NULL"
-            if ($data === NULL) echo('<td><i>NULL</i></td>');
+            if ($data === NULL) echo('<td class="small-checkbox"><i>NULL</i></td>');
             // Anders, toon het gegeven in een cel
-            else echo('<td>'.$data.'</td>');
+            else echo('<td class="small-checkbox">'.$data.'</td>');
         }
         // Sluit de rij af
         echo("</tr>\n");

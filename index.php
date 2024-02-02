@@ -92,7 +92,7 @@ function do_staff() {
     ?>
     <form method="GET" accept-charset="UTF-8">
         <input type="hidden" name="session_guid" value="<?php echo $GLOBALS['session_guid']?>">
-        <h4>Beschikbaarheid docent <?php echo db_single_field("SELECT ppl_login FROM $voxdb.ppl WHERE ppl_id = {$GLOBALS['session_state']['ppl_id']}")?> in <?php echo $weken?></h4>
+        <h4>Beschikbaarheid opgeven voor docent <?php echo db_single_field("SELECT ppl_login FROM $voxdb.ppl WHERE ppl_id = {$GLOBALS['session_state']['ppl_id']}")?> in <?php echo $weken?></h4>
         <p>Geef hier op welke lessen je beschikbaar bent.<br>LET OP: sla je keuze onderaan op.</p>
     </form>
    

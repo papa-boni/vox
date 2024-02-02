@@ -13,8 +13,8 @@ SELECT CONCAT(time_year, 'wk', LPAD(time_week, 2, '0')) week,
 	CONCAT('<label><input type="checkbox" name="doc[]" value="', week_id, '"', IF(status_doc, ' checked', ''), '><span></span></label>') doc,
 	CONCAT('<label><input type="checkbox" name="lln[]" value="', week_id, '"', IF(status_lln, ' checked', ''), '><span></span></label>') lln,
 	CONCAT('<label><input type="checkbox" name="rst[]" value="', week_id, '"', IF(rooster_zichtbaar, ' checked', ''), '><span></span></label>') 'rooster zichtbaar',
-	COUNT(DISTINCT time_id, avail.ppl_id) docuur,
-	COUNT(DISTINCT time_id, claim.ppl_id) lluur,
+	COUNT(DISTINCT time_id, avail.ppl_id) "doc-uur",
+	COUNT(DISTINCT time_id, claim.ppl_id) "lln-uur",
 	CONCAT('<a href="week_ops.php?session_guid=$session_guid&amp;week_id=', week_id, '">opties</a>') opties
 FROM $voxdb.weken
 LEFT JOIN $voxdb.time USING (time_year, time_week)

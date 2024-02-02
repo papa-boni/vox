@@ -17,6 +17,12 @@ main {
 flex: 1 0 auto;
 }
 
+/* chackbox hoogte */
+.small-checkbox {
+    height: 51px;
+}
+
+
 .invoertekst {
     font-size: x-large;
 }
@@ -36,8 +42,11 @@ flex: 1 0 auto;
           padding-bottom: 1.1mm;
           padding-left: 1.1mm;
           padding-right: 1.1mm;
-          border: 1px solid black
+          border: 1px solid black;
+          vertical-align: top;
   }
+
+  
 
 input:-webkit-autofill {
     -webkit-box-shadow: 0 0 0 1000px white inset !important;
@@ -69,13 +78,14 @@ input:-webkit-autofill {
           text-align: center;
       clear: both;
   }
-  #footer {
+  footer {
       font-size: xx-small;
       /* position: fixed; */
       border-top: 2px solid #ccc;
       border-bottom: 2px solid #ccc;
       margin-top: 15px;
       margin-bottom: 5px;
+      color: white;
   }
   #footerlogo {
       padding-top: .3ex;

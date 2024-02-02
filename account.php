@@ -1,17 +1,19 @@
 <?php
 require('system.php');
 require('html.php');
+
 //enforce_logged_in();
 enforce_permission('ACCOUNT');
 
 $res = db_query(<<<EOQ
-SELECT ppl_login login, CONCAT(ppl_forename, ' ', ppl_prefix, ' ', ppl_surname, IFNULL(CONCAT(' (', tags, ')'), '')) naam,
-	CONCAT('<label><input type="checkbox"', 
+SELECT 
+ppl_login login, 
+CONCAT(ppl_forename, ' ', ppl_prefix, ' ', ppl_surname, IFNULL(CONCAT(' (', tags, ')'), '')) naam,
+CONCAT('<label><input type="checkbox"', 
 		IF(password_hash IS NULL, ' checked', ''),
-		' value="', ppl.ppl_id, '-', IFNULL(log_id, 'NULL'),
-		'" name="pplpwlog[]"><span></span></label>') `genereer wachtwoord`,
+			' value="', ppl.ppl_id, '-', IFNULL(log_id, 'NULL'),
+			'" name="pplpwlog[]"><span></span></label>') `genereer wachtwoord`,
 		IFNULL(last_activity, 'nog nooit ingelogd') `laatste activiteit`
-
 FROM $voxdb.ppl
 LEFT JOIN (
 	SELECT auth_user ppl_login, MAX(timestamp) last_activity
